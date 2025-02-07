@@ -1,11 +1,9 @@
 #!/bin/bash
 
 SERVICE_NAME="ntm"
-CONFIG_FILE="/opt/$SERVICE_NAME/config.toml"
-FRPC_CONFIG="/opt/$SERVICE_NAME/bin/frp/frpc.toml"
-FRPS_CONFIG="/opt/$SERVICE_NAME/bin/frp/frps.toml"
-PYTHON_SCRIPT="/opt/$SERVICE_NAME/$SERVICE_NAME.py"
-VENV_PYTHON="/opt/$SERVICE_NAME/venv/bin/python"
+CONFIG_FILE="/opt/$SERVICE_NAME/core/config.toml"
+FRPC_CONFIG="/opt/$SERVICE_NAME/core/bin/frp/frpc.toml"
+FRPS_CONFIG="/opt/$SERVICE_NAME/core/bin/frp/frps.toml"
 
 # Function to display help message
 show_help() {
@@ -47,10 +45,6 @@ if [ "$OLD_CHECKSUM" != "$NEW_CHECKSUM" ]; then
     echo "Config changed. Restarting $SERVICE_NAME service and Python script..."
     sudo systemctl restart "$SERVICE_NAME"
     
-    # Restart the Python script
-    pkill -f "$PYTHON_SCRIPT"
-    nohup "$VENV_PYTHON" "$PYTHON_SCRIPT" > /dev/null 2>&1 &
-
     echo "$SERVICE_NAME and Python script have been restarted."
 else
     echo "No changes detected. Service and script will not be restarted."
