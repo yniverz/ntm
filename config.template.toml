@@ -1,4 +1,1 @@
-type="client" # client or server
-serverHost="0.0.0.0"
-serverPort=7001
-connectionKey="123456"
+type="client"

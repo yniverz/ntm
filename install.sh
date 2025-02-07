@@ -5,6 +5,7 @@ INSTALL_DIR="/opt/$SERVICE_NAME"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 LOG_FILE="/var/log/$SERVICE_NAME.log"
 CONFIG_FILE="$INSTALL_DIR/config.toml"
+COMMAND_FILE="ntm-config"
 COMMAND_SCRIPT="/usr/local/bin/ntm-config"
 PYTHON_BIN=$(which python3)
 
@@ -47,10 +48,11 @@ StandardError=append:$LOG_FILE
 [Install]
 WantedBy=multi-user.target" | sudo tee $SERVICE_FILE
 
-# Step 6: Create a command to edit config
-echo "#!/bin/bash
-nano $CONFIG_FILE" | sudo tee $COMMAND_SCRIPT
+
+# Step 6: Create a command to edit config and restart service if modified
+
 sudo chmod +x $COMMAND_SCRIPT
+
 
 # Step 7: Enable and start the service
 sudo systemctl daemon-reload
