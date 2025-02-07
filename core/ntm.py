@@ -1,10 +1,10 @@
+import time
+import traceback
 import toml
 import os
 import platform
 import subprocess
 import requests
-import os
-
 
 def get_github_latest_release_info(user, repo):
     url = f"https://api.github.com/repos/{user}/{repo}/releases/latest"
@@ -63,8 +63,16 @@ if config['type'] not in ['client', 'server']:
 
 install_latest_frp()
 
+while True:
+    try:
+        if config['type'] == 'client':
+            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'bin/frp/frpc.toml'])
+        else:
+            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'bin/frp/frps.toml'])
 
-if config['type'] == 'client':
-    subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'bin/frp/frpc.toml'])
-else:
-    subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'bin/frp/frps.toml'])
+    except Exception as e:
+        print(traceback.format_exc())
+
+    print("Restarting in 5 seconds...")
+
+    time.sleep(5)
