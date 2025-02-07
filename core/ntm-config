@@ -2,8 +2,8 @@
 
 SERVICE_NAME="ntm"
 CONFIG_FILE="/opt/$SERVICE_NAME/core/config.toml"
-FRPC_CONFIG="/opt/$SERVICE_NAME/core/bin/frp/frpc.toml"
-FRPS_CONFIG="/opt/$SERVICE_NAME/core/bin/frp/frps.toml"
+FRPC_CONFIG="/opt/$SERVICE_NAME/core/bin/frpc.toml"
+FRPS_CONFIG="/opt/$SERVICE_NAME/core/bin/frps.toml"
 
 # Function to display help message
 show_help() {

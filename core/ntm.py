@@ -45,6 +45,14 @@ def install_latest_frp():
     subprocess.run(["mv", os.environ['BASE_PATH'] + filename.replace(".tar.gz", ""), os.environ['BASE_PATH'] + "bin/frp"])
     subprocess.run(["rm", os.environ['BASE_PATH'] + filename])
 
+    if not os.path.exists(os.environ['BASE_PATH'] + 'bin/frpc.toml'):
+        subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frpc.toml', os.environ['BASE_PATH'] + 'bin/frpc.toml'])
+
+    if not os.path.exists(os.environ['BASE_PATH'] + 'bin/frps.toml'):
+        subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frps.toml', os.environ['BASE_PATH'] + 'bin/frps.toml'])
+
+
+
 
 
 
@@ -66,9 +74,9 @@ install_latest_frp()
 while True:
     try:
         if config['type'] == 'client':
-            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'bin/frp/frpc.toml'])
+            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'bin/frpc.toml'])
         else:
-            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'bin/frp/frps.toml'])
+            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'bin/frps.toml'])
 
     except Exception as e:
         print(traceback.format_exc())
