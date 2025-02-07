@@ -45,11 +45,11 @@ def install_latest_frp():
     subprocess.run(["mv", os.environ['BASE_PATH'] + filename.replace(".tar.gz", ""), os.environ['BASE_PATH'] + "bin/frp"])
     subprocess.run(["rm", os.environ['BASE_PATH'] + filename])
 
-    if not os.path.exists(os.environ['BASE_PATH'] + 'bin/frpc.toml'):
-        subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frpc.toml', os.environ['BASE_PATH'] + 'bin/frpc.toml'])
+    if not os.path.exists(os.environ['BASE_PATH'] + '../frpc.toml'):
+        subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frpc.toml', os.environ['BASE_PATH'] + '../frpc.toml'])
 
-    if not os.path.exists(os.environ['BASE_PATH'] + 'bin/frps.toml'):
-        subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frps.toml', os.environ['BASE_PATH'] + 'bin/frps.toml'])
+    if not os.path.exists(os.environ['BASE_PATH'] + '../frps.toml'):
+        subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frps.toml', os.environ['BASE_PATH'] + '../frps.toml'])
 
 
 
