@@ -11,13 +11,12 @@ sudo systemctl stop $SERVICE_NAME
 
 # Step 2: Update the module and main script
 sudo cp -r core $INSTALL_DIR/
-sudo cp ntm.py $INSTALL_DIR/
 
 # Step 3: Update dependencies
 source $INSTALL_DIR/venv/bin/activate
-if [ -f "requirements.txt" ]; then
-    pip install --upgrade -r requirements.txt
-fi
+
+pip install --upgrade -r $INSTALL_DIR/core/requirements.txt
+
 deactivate
 
 # Step 4: Restart the service
