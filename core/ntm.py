@@ -65,6 +65,6 @@ install_latest_frp()
 
 
 if config['type'] == 'client':
-    subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'frpc.toml'])
+    subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'bin/frp/frpc.toml'])
 else:
-    subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'frps.toml'])
+    subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'bin/frp/frps.toml'])
