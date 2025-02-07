@@ -47,10 +47,8 @@ cd $INSTALL_DIR
 python3 -m venv venv
 source venv/bin/activate
 
-# Step 4: Install dependencies
-if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
-fi
+pip install -r $INSTALL_DIR/core/requirements.txt
+
 deactivate
 
 # Step 7: Enable and start the service
