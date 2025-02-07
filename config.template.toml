@@ -1,1 +1,5 @@
+# Can be "client" or "server"
+# use ntm-config -c to edit frpc.toml (client)
+#  or ntm-config -s to edit frps.toml (server)
+
 type="client"
