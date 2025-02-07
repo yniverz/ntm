@@ -5,7 +5,7 @@ INSTALL_DIR="/opt/$SERVICE_NAME"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 LOG_FILE="/var/log/$SERVICE_NAME.log"
 CONFIG_FILE="$INSTALL_DIR/core/config.toml"
-COMMAND_FILE="ntm-config"
+COMMAND_FILE="core/ntm-config"
 COMMAND_SCRIPT="/usr/local/bin/ntm-config"
 PYTHON_BIN=$(which python3)
 
