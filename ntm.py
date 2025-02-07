@@ -1,10 +1,5 @@
-import core
 import toml
 import os
-
-
-
-
 import platform
 import subprocess
 import requests
