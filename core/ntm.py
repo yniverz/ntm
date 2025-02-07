@@ -61,10 +61,7 @@ def install_latest_frp():
 
 os.environ['BASE_PATH'] = os.path.abspath(__file__).removesuffix(os.path.basename(__file__))
 
-try:
-    config = toml.load(os.environ['BASE_PATH'] + 'config.toml')
-except FileNotFoundError:
-    config = toml.load(os.environ['BASE_PATH'] + 'config.template.toml')
+config = toml.load(os.environ['BASE_PATH'] + '../config.toml')
 
 if config['type'] not in ['client', 'server']:
     raise ValueError('Invalid NTM type in config.toml')
@@ -74,9 +71,9 @@ install_latest_frp()
 while True:
     try:
         if config['type'] == 'client':
-            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'bin/frpc.toml'])
+            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + '../frpc.toml'])
         else:
-            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + 'bin/frps.toml'])
+            subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frps', '-c', os.environ['BASE_PATH'] + '../frps.toml'])
 
     except Exception as e:
         print(traceback.format_exc())
