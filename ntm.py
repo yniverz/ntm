@@ -20,7 +20,7 @@ def get_latest_frp_download_link():
     release = get_github_latest_release_info("fatedier", "frp")
 
     system = platform.system()
-    if system in ["Linux", "Darwin"]:
+    if system in ["Linux"]:
         if platform.machine().lower() == "x86_64":
             asset_type = "linux_amd64"
         elif platform.machine().lower() == "arm64":
@@ -55,6 +55,7 @@ def install_latest_frp():
 
 
 
+
 os.environ['BASE_PATH'] = os.path.abspath(__file__).removesuffix(os.path.basename(__file__))
 
 try:
@@ -67,9 +68,6 @@ if config['type'] not in ['client', 'server']:
 
 install_latest_frp()
 
-
-# start a synchronous shell command
-# subprocess.run([os.environ['BASE_PATH'] + 'bin/frp', '-c', os.environ['BASE_PATH'] + 'frp.ini'])
 
 if config['type'] == 'client':
     subprocess.run([os.environ['BASE_PATH'] + 'bin/frp/frpc', '-c', os.environ['BASE_PATH'] + 'frpc.toml'])
