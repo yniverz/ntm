@@ -295,6 +295,41 @@ class Client:
             res += proxy.generate_config()
 
         return res
+    
+
+
+class DataclassJSONEncoder(json.JSONEncoder):
+    """
+    Adds a __type__ sentinel so the matching dataclass can be reconstructed.
+    """
+    def default(self, obj: Any) -> Any:
+        if dataclasses.is_dataclass(obj):
+            d = dataclasses.asdict(obj)
+            d["__type__"] = obj.__class__.__name__
+            return d
+        return super().default(obj)
+
+class DataclassJSONDecoder(json.JSONDecoder):
+    """
+    Recreates nested dataclasses automatically via object_hook.
+    """
+    _registry: dict[str, Type] = {
+        "Client": Client,
+        "Proxy":  Proxy,
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(object_hook=self._hook, *args, **kwargs)
+
+    def _hook(self, obj: dict) -> Any:
+        cls_name = obj.pop("__type__", None)
+        if cls_name is not None:
+            cls = self._registry.get(cls_name)
+            if cls is None:
+                raise ValueError(f"Unknown dataclass type: {cls_name}")
+            # The inner objects (if any) have already been processed
+            return cls(**obj)
+        return obj
 
 config_file = f'{BASE}proxy_config.json'
 
@@ -333,40 +368,6 @@ def get_client(client_id):
         
     raise ValueError("No such client id")
 
-
-
-class DataclassJSONEncoder(json.JSONEncoder):
-    """
-    Adds a __type__ sentinel so the matching dataclass can be reconstructed.
-    """
-    def default(self, obj: Any) -> Any:
-        if dataclasses.is_dataclass(obj):
-            d = dataclasses.asdict(obj)
-            d["__type__"] = obj.__class__.__name__
-            return d
-        return super().default(obj)
-
-class DataclassJSONDecoder(json.JSONDecoder):
-    """
-    Recreates nested dataclasses automatically via object_hook.
-    """
-    _registry: dict[str, Type] = {
-        "Client": Client,
-        "Proxy":  Proxy,
-    }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(object_hook=self._hook, *args, **kwargs)
-
-    def _hook(self, obj: dict) -> Any:
-        cls_name = obj.pop("__type__", None)
-        if cls_name is not None:
-            cls = self._registry.get(cls_name)
-            if cls is None:
-                raise ValueError(f"Unknown dataclass type: {cls_name}")
-            # The inner objects (if any) have already been processed
-            return cls(**obj)
-        return obj
 
 def auth_token(f):
     """
