@@ -427,7 +427,7 @@ def run_api():
     Waitress or Gunicorn if you need real production robustness.
     """
     # For an internal service it's common to bind to 0.0.0.0 so LAN clients work
-    app.run(host="0.0.0.0", port=5000, threaded=True)
+    app.run(host="0.0.0.0", port=CONFIG.master_port, threaded=True)
 
 
 
