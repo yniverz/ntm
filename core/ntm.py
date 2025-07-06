@@ -309,7 +309,7 @@ CONFIG_DB: list[Client] = load_config()
     
 def save_config():
     with open(config_file, 'w') as f:
-        json.dump({"clients": [client.__dict__ for client in CONFIG_DB]}, f, indent=4)
+        json.dump({"clients": [client.__dict__ for client in CONFIG_DB]}, f, indent=4, cls=DataclassJSONEncoder)
 
 def get_client(client_id):
     for client in CONFIG_DB:
