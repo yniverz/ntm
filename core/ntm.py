@@ -283,6 +283,7 @@ remotePort={self.remotePort}
         return config_string
 
 
+@dataclass
 class Client:
     id: str
     proxies: list[Proxy]
