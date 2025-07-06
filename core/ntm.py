@@ -300,14 +300,31 @@ class Client:
 
 class DataclassJSONEncoder(json.JSONEncoder):
     """
-    Adds a __type__ sentinel so the matching dataclass can be reconstructed.
+    Recursively adds a __type__ key to all dataclass instances,
+    including nested ones like proxies inside clients.
     """
     def default(self, obj: Any) -> Any:
         if dataclasses.is_dataclass(obj):
-            d = dataclasses.asdict(obj)
-            d["__type__"] = obj.__class__.__name__
-            return d
+            return self._encode_dataclass(obj)
         return super().default(obj)
+
+    def _encode_dataclass(self, obj: Any) -> dict:
+        result = {"__type__": obj.__class__.__name__}
+        for field in dataclasses.fields(obj):
+            value = getattr(obj, field.name)
+            result[field.name] = self._encode_value(value)
+        return result
+
+    def _encode_value(self, value: Any) -> Any:
+        if dataclasses.is_dataclass(value):
+            return self._encode_dataclass(value)
+        elif isinstance(value, list):
+            return [self._encode_value(v) for v in value]
+        elif isinstance(value, dict):
+            return {k: self._encode_value(v) for k, v in value.items()}
+        else:
+            return value
+
 
 class DataclassJSONDecoder(json.JSONDecoder):
     """
