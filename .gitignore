@@ -6,6 +6,7 @@
 # Project files
 bin/
 config.toml
+core/proxy_config.json
 
 # Apple files
 .DS_Store
