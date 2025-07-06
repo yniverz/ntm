@@ -57,41 +57,6 @@ def install_latest_frp():
         subprocess.run(["mv", os.environ['BASE_PATH'] + 'bin/frp/frps.toml', os.environ['BASE_PATH'] + '../frps.toml'])
 
 
-def verify_config(config: dict[str, any]):
-    """
-    Verify the configuration loaded from config.toml.
-    
-    config params:
-        type: client/server
-        server_token: string (required for both client and server)
-        client_id: string (required for client)
-        server_address: ip:port (only for client, optional)
-    """
-
-    if 'type' not in config:
-        raise ValueError('Missing "type" in config.toml')
-    if config['type'] not in ['client', 'server']:
-        raise ValueError('Invalid "type" in config.toml, must be "client" or "server"')
-    
-    if 'server_token' not in config:
-        raise ValueError('Missing "server_token" in config.toml')
-    
-    if config['type'] == 'client':
-        if 'client_id' not in config:
-            raise ValueError('Missing "client_id" in config.toml')
-        
-        if 'server_address' not in config:
-            config['server_address'] = None
-        else:
-            try:
-                ip, port = config['server_address'].split(':')
-                config['server_address'] = f"{ip}:{int(port)}"
-            except ValueError:
-                raise ValueError('Invalid "server_address" in config.toml, must be "ip:port"')
-    else:
-        if "master_port" not in config:
-            raise ValueError('Missing "master_port" in config.toml')
-
 
 
 def generate_client_config(server_token: str, server_address: str, proxies: str) -> str:
@@ -133,9 +98,63 @@ def write_client_config(contents: str) -> None:
 
 BASE = os.environ['BASE_PATH'] = os.path.abspath(__file__).removesuffix(os.path.basename(__file__))
 
-config = toml.load(BASE + '../config.toml')
+@dataclass
+class Config:
+    type: str
+    server_token: str
+    client_id: str = None
+    server_address: str = None
+    master_port: int = None
 
-verify_config(config)
+    @staticmethod
+    def verify_config(cfg: dict[str, any]):
+        """
+        Verify the configuration loaded from config.toml.
+        
+        config params:
+            type: client/server
+            server-token: string (required for both client and server)
+            client-id: string (required for client)
+            server-address: ip:port (only for client, optional)
+        """
+
+        if 'type' not in cfg:
+            raise ValueError('Missing "type" in config.toml')
+        if cfg['type'] not in ['client', 'server']:
+            raise ValueError('Invalid "type" in config.toml, must be "client" or "server"')
+        
+        if 'server-token' not in cfg:
+            raise ValueError('Missing "server-token" in config.toml')
+        
+        if cfg['type'] == 'client':
+            if 'client-id' not in cfg:
+                raise ValueError('Missing "client-id" in config.toml')
+
+            if 'server-address' not in cfg:
+                cfg['server-address'] = None
+            else:
+                try:
+                    ip, port = cfg['server-address'].split(':')
+                    cfg['server-address'] = f"{ip}:{int(port)}"
+                except ValueError:
+                    raise ValueError('Invalid "server-address" in config.toml, must be "ip:port"')
+        else:
+            if "master-port" not in cfg:
+                raise ValueError('Missing "master-port" in config.toml')
+
+
+    @staticmethod
+    def from_toml(config: dict[str, any]) -> 'Config':
+        Config.verify_config(config)
+        return Config(
+            type=config.get('type', 'client'),
+            server_token=config.get('server-token', ''),
+            client_id=config.get('client-id', None),
+            server_address=config.get('server-address', None),
+            master_port=config.get('master-port', None)
+        )
+
+CONFIG = Config.from_toml(toml.load(BASE + '../config.toml'))
 
 install_latest_frp()
 
@@ -148,7 +167,7 @@ restart_event = threading.Event()
 def check_server():
     while not stop_event.wait(60):
         try:
-            response = requests.get(f"http://{config['server_address']}/client/{config['client_id']}/config?token={config['server_token']}", timeout=5)
+            response = requests.get(f"http://{CONFIG.server_address}/client/{CONFIG.client_id}/config?token={CONFIG.server_token}", timeout=5)
             if response.status_code != 200:
                 print(f"Server returned status code {response.status_code}. Ignoring...")
                 continue
@@ -157,8 +176,8 @@ def check_server():
 
             write_client_config(
                 generate_client_config(
-                    server_token=config['server_token'],
-                    server_address=config['server_address'],
+                    server_token=CONFIG.server_token,
+                    server_address=CONFIG.server_address,
                     proxies=data
                 )
             )
@@ -173,7 +192,7 @@ def check_server():
 def frp_monitor():
     """Keep an frp process alive and restart on request/failure."""
     while not stop_event.is_set():
-        cmd = CLIENT if config['type'] == 'client' else SERVER
+        cmd = CLIENT if CONFIG.type == 'client' else SERVER
         try:
             with subprocess.Popen(cmd) as proc:
                 # poll once a second so we can notice restart/stop requests
@@ -196,7 +215,7 @@ threads = [
     threading.Thread(target=frp_monitor, daemon=True),
 ]
 
-if config['type'] == 'client' and config.get('server_address'):
+if CONFIG.type == 'client' and CONFIG.server_address:
     threads += [
         threading.Thread(target=check_server, daemon=True),
     ]
@@ -278,7 +297,7 @@ def auth_token(f):
     """
     def wrapper(*args, **kwargs):
         token = request.args.get("token")
-        if not token or token != config['server_token']:
+        if not token or token != CONFIG.server_token:
             return jsonify({"error": "invalid token"}), 403
         return f(*args, **kwargs)
     return wrapper
@@ -423,7 +442,7 @@ for t in threads: t.start()
 
 try:
     while True:
-        if config['type'] != "server":
+        if CONFIG.type != "server":
             time.sleep(1)
             continue
 

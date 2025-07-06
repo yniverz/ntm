@@ -3,19 +3,19 @@
 #  or ntm-config -s to edit frps.toml (server)
 
 type="client"
-server_token="your_token"
+server-token="your_token"
 
 
 
 # # Demo Server Config
 # type="server"
-# server_token="your_token"
-# master_port=7000
+# server-token="your_token"
+# master-port=7000
 
 
 
 # # Demo Client Config
 # type="client"
-# server_token="your_token"
-# client_id="your_client_id"
-# server_address="1.2.3.4:7000" # optional
+# server-token="your_token"
+# client-id="your_client_id"
+# server-address="1.2.3.4:7000" # optional
