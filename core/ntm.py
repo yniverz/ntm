@@ -186,7 +186,7 @@ restart_event = threading.Event()
 def check_server():
     while not stop_event.wait(60):
         try:
-            addr = str(CONFIG.server_address.split(':')[0]) + str(CONFIG.master_port)
+            addr = f"{CONFIG.server_address.split(':')[0]}:{CONFIG.master_port}"
             response = requests.get(f"http://{addr}/client/{CONFIG.client_id}/config?token={CONFIG.server_token}", timeout=5)
             if response.status_code != 200:
                 print(f"Server returned status code {response.status_code}. Ignoring...")
