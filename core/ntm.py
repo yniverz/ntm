@@ -103,6 +103,11 @@ BASE = os.environ['BASE_PATH'] = os.path.abspath(__file__).removesuffix(os.path.
 class Config:
     type: str
     server_token: str
+
+    # Only for server
+    bind_port: int = None
+
+    # Only for client
     client_id: str = None
     server_address: str = None
     master_port: int = None
@@ -229,6 +234,22 @@ if CONFIG.type == 'client' and CONFIG.server_address:
         threading.Thread(target=check_server, daemon=True),
     ]
 
+elif CONFIG.type == 'server':
+    # parse existing server toml if exist
+    data = {}
+    if os.path.exists(BASE + '../frps.toml'):
+        data = toml.load(BASE + '../frps.toml')
+
+    # make sure above params are set
+    data['bindPort'] = CONFIG.bind_port if CONFIG.bind_port else 7000
+    data['auth'] = {}
+    data['auth']['method'] = 'token'
+    data['auth']['token'] = CONFIG.server_token
+    data['auth']['additionalScopes'] = ['HeartBeats']
+
+    # write back to frps.toml
+    with open(BASE + '../frps.toml', 'w') as f:
+        toml.dump(data, f)
 
 
 
@@ -289,8 +310,7 @@ def get_client(client_id):
         if client.id == client_id:
             return client
         
-    else:
-        raise ValueError("No such client id")
+    raise ValueError("No such client id")
 
 
 
@@ -318,7 +338,7 @@ def get_clients():
     """
     Get a list of all clients.
     """
-    Response(
+    return Response(
         json.dumps(CONFIG_DB, cls=DataclassJSONEncoder),
         status=200,
         mimetype="application/json"
