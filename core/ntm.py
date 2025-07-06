@@ -157,7 +157,15 @@ class Config:
 
 CONFIG = Config.from_toml(toml.load(BASE + '../config.toml'))
 
-install_latest_frp()
+try:
+    install_latest_frp()
+except Exception as e:
+    # check if binaries exist already
+    if not os.path.exists(BASE + 'bin/frp/frpc') or not os.path.exists(BASE + 'bin/frp/frps'):
+        print(f"Failed to install frp: {e}")
+        print("Please install frp manually or check your internet connection.")
+        exit(1)
+
 
 CLIENT = [f'{BASE}bin/frp/frpc', '-c', f'{BASE}../frpc.toml']
 SERVER = [f'{BASE}bin/frp/frps', '-c', f'{BASE}../frps.toml']
