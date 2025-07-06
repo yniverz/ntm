@@ -5,6 +5,7 @@ import json
 import threading
 import time
 import traceback
+from typing import Any, Type
 from flask import Flask, Response, jsonify, request
 import toml
 import os
@@ -113,7 +114,7 @@ class Config:
     master_port: int = None
 
     @staticmethod
-    def verify_config(cfg: dict[str, any]):
+    def verify_config(cfg: dict[str, Any]):
         """
         Verify the configuration loaded from config.toml.
         
@@ -154,7 +155,7 @@ class Config:
 
 
     @staticmethod
-    def from_toml(config: dict[str, any]) -> 'Config':
+    def from_toml(config: dict[str, Any]) -> 'Config':
         Config.verify_config(config)
         return Config(
             type=config.get('type', 'client'),
@@ -297,19 +298,33 @@ class Client:
 
 config_file = f'{BASE}proxy_config.json'
 
-def load_config():
+def load_config() -> list[Client]:
+    """
+    Reads the JSON file and returns a list[Client].
+    If the file is absent or empty → returns [].
+    """
     if not os.path.exists(config_file):
         return []
 
-    with open(config_file, 'r') as f:
-        data = json.load(f)
-        return [Client(**client) for client in data.get("clients", [])]
+    with open(config_file, "r") as f:
+        data = json.load(f, cls=DataclassJSONDecoder)
+
+    # Accept either {"clients": [...] } or bare list [...]
+    if isinstance(data, dict) and "clients" in data:
+        return data["clients"]
+    if isinstance(data, list):
+        return data
+    raise ValueError("Unexpected JSON structure in config file")
+
+def save_config(clients: list[Client]) -> None:
+    """
+    Serialises the list[Client] back to disk.
+    """
+    with open(config_file, "w") as f:
+        json.dump({"clients": clients}, f, cls=DataclassJSONEncoder, indent=4)
 
 CONFIG_DB: list[Client] = load_config()
-    
-def save_config():
-    with open(config_file, 'w') as f:
-        json.dump({"clients": [client.__dict__ for client in CONFIG_DB]}, f, indent=4, cls=DataclassJSONEncoder)
+
 
 def get_client(client_id):
     for client in CONFIG_DB:
@@ -321,10 +336,37 @@ def get_client(client_id):
 
 
 class DataclassJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
-        return super().default(o)
+    """
+    Adds a __type__ sentinel so the matching dataclass can be reconstructed.
+    """
+    def default(self, obj: Any) -> Any:
+        if dataclasses.is_dataclass(obj):
+            d = dataclasses.asdict(obj)
+            d["__type__"] = obj.__class__.__name__
+            return d
+        return super().default(obj)
+
+class DataclassJSONDecoder(json.JSONDecoder):
+    """
+    Recreates nested dataclasses automatically via object_hook.
+    """
+    _registry: dict[str, Type] = {
+        "Client": Client,
+        "Proxy":  Proxy,
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(object_hook=self._hook, *args, **kwargs)
+
+    def _hook(self, obj: dict) -> Any:
+        cls_name = obj.pop("__type__", None)
+        if cls_name is not None:
+            cls = self._registry.get(cls_name)
+            if cls is None:
+                raise ValueError(f"Unknown dataclass type: {cls_name}")
+            # The inner objects (if any) have already been processed
+            return cls(**obj)
+        return obj
 
 def auth_token(f):
     """
