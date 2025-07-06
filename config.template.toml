@@ -10,7 +10,8 @@ server-token="your_token"
 # # Demo Server Config
 # type="server"
 # server-token="your_token"
-# master-port=7000
+# bind-port=7000
+# master-port=7001
 
 
 
@@ -18,4 +19,5 @@ server-token="your_token"
 # type="client"
 # server-token="your_token"
 # client-id="your_client_id"
-# server-address="1.2.3.4:7000" # optional
+# server-address="1.2.3.4:7000"
+# master-port=7001

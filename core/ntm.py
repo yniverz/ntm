@@ -132,6 +132,9 @@ class Config:
         if 'server-token' not in cfg:
             raise ValueError('Missing "server-token" in config.toml')
         
+        if "master-port" not in cfg:
+            raise ValueError('Missing "master-port" in config.toml')
+        
         if cfg['type'] == 'client':
             if 'client-id' not in cfg:
                 raise ValueError('Missing "client-id" in config.toml')
@@ -145,8 +148,9 @@ class Config:
                 except ValueError:
                     raise ValueError('Invalid "server-address" in config.toml, must be "ip:port"')
         else:
-            if "master-port" not in cfg:
-                raise ValueError('Missing "master-port" in config.toml')
+            
+            if 'bind-port' not in cfg:
+                raise ValueError('Missing "bind-port" in config.toml')
 
 
     @staticmethod
@@ -181,7 +185,8 @@ restart_event = threading.Event()
 def check_server():
     while not stop_event.wait(60):
         try:
-            response = requests.get(f"http://{CONFIG.server_address}/client/{CONFIG.client_id}/config?token={CONFIG.server_token}", timeout=5)
+            addr = CONFIG.server_address.split(':')[0] + CONFIG.master_port
+            response = requests.get(f"http://{addr}/client/{CONFIG.client_id}/config?token={CONFIG.server_token}", timeout=5)
             if response.status_code != 200:
                 print(f"Server returned status code {response.status_code}. Ignoring...")
                 continue
