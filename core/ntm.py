@@ -344,19 +344,16 @@ def load_config() -> list[Client]:
     with open(config_file, "r") as f:
         data = json.load(f, cls=DataclassJSONDecoder)
 
-    # Accept either {"clients": [...] } or bare list [...]
     if isinstance(data, dict) and "clients" in data:
         return data["clients"]
-    if isinstance(data, list):
-        return data
     raise ValueError("Unexpected JSON structure in config file")
 
-def save_config(clients: list[Client]) -> None:
+def save_config() -> None:
     """
     Serialises the list[Client] back to disk.
     """
     with open(config_file, "w") as f:
-        json.dump({"clients": clients}, f, cls=DataclassJSONEncoder, indent=4)
+        json.dump({"clients": CONFIG_DB}, f, cls=DataclassJSONEncoder, indent=4)
 
 CONFIG_DB: list[Client] = load_config()
 
