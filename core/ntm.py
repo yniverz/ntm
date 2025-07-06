@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 import dataclasses
+from functools import wraps
 import json
 import threading
 import time
 import traceback
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 import toml
 import os
 import platform
@@ -295,6 +296,7 @@ def auth_token(f):
     """
     Decorator to check if the request has a valid token.
     """
+    @wraps(f)
     def wrapper(*args, **kwargs):
         token = request.args.get("token")
         if not token or token != CONFIG.server_token:
@@ -308,7 +310,11 @@ def get_clients():
     """
     Get a list of all clients.
     """
-    return json.dumps(CONFIG_DB, cls=DataclassJSONEncoder), 200
+    Response(
+        json.dumps(CONFIG_DB, cls=DataclassJSONEncoder),
+        status=200,
+        mimetype="application/json"
+    )
 
 @app.route("/client", methods=["PUT"])
 @auth_token
